@@ -2,10 +2,25 @@
 
 ## Cursor Cloud specific instructions
 
-This repository (`x_follow_clean`) is currently an empty/skeleton project containing only a `README.md`. There is no source code, no dependency files, no build system, no tests, and no services to run.
+This is **X Follow Clean**, a Next.js 14 application that analyzes X (Twitter) following lists using AI to identify information chain positions and recommend unfollows.
 
-- **Tech stack:** Not yet established.
-- **Package manager:** None configured.
-- **Lint/Test/Build/Run:** No commands available — no application code exists yet.
+### Tech Stack
+- **Framework:** Next.js 14 (App Router) + TypeScript
+- **Styling:** TailwindCSS + Framer Motion
+- **AI:** Claude API via OpenAI-compatible client (endpoint in `.env.local`)
+- **Package manager:** npm (`package-lock.json`)
 
-When source code and dependency files are added, update this section with the relevant commands and caveats.
+### Running the App
+- `npm run dev` — starts dev server on port 3000
+- `npm run build` — production build
+- `npm run lint` — ESLint checks
+
+### Key Architecture Notes
+- Mock Twitter data is in `src/lib/mock-data.ts` (20 accounts across 6 categories)
+- Claude API integration in `src/lib/claude.ts` with fallback analysis if API fails
+- The info chain axis tooltips use `createPortal` to render to `document.body` — this was necessary to prevent layout shifts when tooltips appear
+- API key and base URL are configured in `.env.local` (not committed)
+
+### Environment Variables Required
+- `CLAUDE_API_KEY` — Claude-compatible API key
+- `CLAUDE_BASE_URL` — API endpoint (e.g., `https://api.aigocode.com`)
