@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { CategorizedAccount } from '@/lib/types'
 import { ChevronRight, ExternalLink, UserMinus, Users, MessageSquare } from 'lucide-react'
+import { createPortal } from 'react-dom'
 
 function getPositionColor(position: number): string {
   if (position <= 30) return 'bg-green-500'
@@ -26,13 +27,50 @@ function formatCount(n: number): string {
   return String(n)
 }
 
-function AccountTooltip({ account, onClose }: { account: CategorizedAccount; onClose: () => void }) {
-  return (
+function AccountTooltip({
+  account,
+  onClose,
+  anchorRef,
+}: {
+  account: CategorizedAccount
+  onClose: () => void
+  anchorRef: React.RefObject<HTMLButtonElement>
+}) {
+  const [pos, setPos] = useState({ top: 0, left: 0 })
+  const tooltipRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!anchorRef.current) return
+    const rect = anchorRef.current.getBoundingClientRect()
+    setPos({
+      top: rect.top - 8,
+      left: rect.left + rect.width / 2,
+    })
+  }, [anchorRef])
+
+  useEffect(() => {
+    if (!tooltipRef.current) return
+    const tooltipRect = tooltipRef.current.getBoundingClientRect()
+    if (tooltipRect.left < 8) {
+      setPos(p => ({ ...p, left: p.left + (8 - tooltipRect.left) }))
+    }
+    if (tooltipRect.right > window.innerWidth - 8) {
+      setPos(p => ({ ...p, left: p.left - (tooltipRect.right - window.innerWidth + 8) }))
+    }
+  }, [pos.top, pos.left])
+
+  const content = (
     <motion.div
+      ref={tooltipRef}
       initial={{ opacity: 0, y: 10, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      className="absolute bottom-full left-1/2 z-50 mb-3 w-72 -translate-x-1/2 rounded-xl border border-white/10 bg-gray-900/95 p-4 shadow-2xl backdrop-blur-xl"
+      className="fixed z-[9999] w-72 rounded-xl border border-white/10 bg-gray-900/95 p-4 shadow-2xl backdrop-blur-xl"
+      style={{
+        top: pos.top,
+        left: pos.left,
+        transform: 'translate(-50%, -100%)',
+      }}
       onClick={(e) => e.stopPropagation()}
     >
       <div className="mb-3 flex items-start justify-between">
@@ -101,6 +139,70 @@ function AccountTooltip({ account, onClose }: { account: CategorizedAccount; onC
       </a>
     </motion.div>
   )
+
+  if (typeof document === 'undefined') return null
+  return createPortal(content, document.body)
+}
+
+function AccountDot({
+  account,
+  index,
+  isSelected,
+  onSelect,
+}: {
+  account: CategorizedAccount
+  index: number
+  isSelected: boolean
+  onSelect: (id: string | null) => void
+}) {
+  const btnRef = useRef<HTMLButtonElement>(null)
+
+  return (
+    <div
+      className="absolute"
+      style={{
+        left: `${account.chainPosition}%`,
+        top: '-8px',
+        transform: 'translateX(-50%)',
+      }}
+    >
+      <motion.button
+        ref={btnRef}
+        whileHover={{ scale: 1.3 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={(e) => {
+          e.stopPropagation()
+          onSelect(isSelected ? null : account.id)
+        }}
+        className={`relative h-6 w-6 rounded-full border-2 border-gray-900 ${getPositionColor(account.chainPosition)} shadow-lg transition-all ${
+          account.unfollowRecommended ? 'ring-2 ring-red-500/50' : ''
+        } ${isSelected ? 'ring-2 ring-white/50 scale-125' : ''}`}
+        title={`@${account.handle}`}
+      >
+        <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-white">
+          {account.displayName.charAt(0)}
+        </span>
+      </motion.button>
+
+      {/* Handle label */}
+      <div className={`absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] ${
+        index % 2 === 0 ? 'top-8' : 'top-8 mt-3'
+      } ${account.unfollowRecommended ? 'text-red-400' : 'text-gray-500'}`}>
+        @{account.handle.length > 12 ? account.handle.substring(0, 12) + '…' : account.handle}
+      </div>
+
+      {/* Tooltip via portal */}
+      <AnimatePresence>
+        {isSelected && (
+          <AccountTooltip
+            account={account}
+            onClose={() => onSelect(null)}
+            anchorRef={btnRef as React.RefObject<HTMLButtonElement>}
+          />
+        )}
+      </AnimatePresence>
+    </div>
+  )
 }
 
 export default function InfoChainAxis({
@@ -117,11 +219,23 @@ export default function InfoChainAxis({
   const [selectedAccount, setSelectedAccount] = useState<string | null>(null)
   const [expanded, setExpanded] = useState(true)
 
+  const handleClickOutside = useCallback(() => {
+    setSelectedAccount(null)
+  }, [])
+
+  useEffect(() => {
+    if (selectedAccount) {
+      const handler = () => setSelectedAccount(null)
+      document.addEventListener('click', handler)
+      return () => document.removeEventListener('click', handler)
+    }
+  }, [selectedAccount])
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="glass-card mb-6 overflow-hidden rounded-2xl"
+      className="glass-card mb-6 overflow-visible rounded-2xl"
     >
       {/* Category header */}
       <button
@@ -149,7 +263,7 @@ export default function InfoChainAxis({
           </div>
 
           {/* Axis line */}
-          <div className="relative mb-8">
+          <div className="relative mb-16" style={{ minHeight: '24px' }}>
             <div className="axis-gradient h-1.5 w-full rounded-full opacity-60" />
 
             {/* Tick marks */}
@@ -161,48 +275,13 @@ export default function InfoChainAxis({
 
             {/* Account dots */}
             {accounts.map((account, i) => (
-              <div
+              <AccountDot
                 key={account.id}
-                className="absolute"
-                style={{
-                  left: `${account.chainPosition}%`,
-                  top: '-8px',
-                  transform: 'translateX(-50%)',
-                }}
-              >
-                <div className="relative">
-                  <motion.button
-                    whileHover={{ scale: 1.3 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => setSelectedAccount(
-                      selectedAccount === account.id ? null : account.id
-                    )}
-                    className={`relative h-6 w-6 rounded-full border-2 border-gray-900 ${getPositionColor(account.chainPosition)} shadow-lg transition-all ${
-                      account.unfollowRecommended ? 'ring-2 ring-red-500/50' : ''
-                    } ${selectedAccount === account.id ? 'ring-2 ring-white/50 scale-125' : ''}`}
-                    title={`@${account.handle}`}
-                  >
-                    <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-white">
-                      {account.displayName.charAt(0)}
-                    </span>
-                  </motion.button>
-
-                  {/* Handle label */}
-                  <div className={`absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] ${
-                    i % 2 === 0 ? 'top-8' : 'top-8 mt-3'
-                  } ${account.unfollowRecommended ? 'text-red-400' : 'text-gray-500'}`}>
-                    @{account.handle.length > 12 ? account.handle.substring(0, 12) + '…' : account.handle}
-                  </div>
-
-                  {/* Tooltip */}
-                  {selectedAccount === account.id && (
-                    <AccountTooltip
-                      account={account}
-                      onClose={() => setSelectedAccount(null)}
-                    />
-                  )}
-                </div>
-              </div>
+                account={account}
+                index={i}
+                isSelected={selectedAccount === account.id}
+                onSelect={setSelectedAccount}
+              />
             ))}
           </div>
 
