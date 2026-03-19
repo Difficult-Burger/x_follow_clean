@@ -7,15 +7,14 @@ import HandleInput from '@/components/HandleInput'
 
 export default function Home() {
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen bg-gray-50">
       <Header />
       <HeroSection />
       <HowItWorks />
       <HandleInput />
 
-      <footer className="border-t border-white/5 py-8 text-center text-sm text-gray-600">
-        <p>X Follow Clean — 用 AI 清理你的信息流噪音</p>
-        <p className="mt-1">Powered by Claude AI</p>
+      <footer className="border-t border-gray-100 py-6 text-center text-xs text-gray-400">
+        <p>FollowClean — AI 驱动的信息流优化 · Powered by Claude</p>
       </footer>
     </main>
   )

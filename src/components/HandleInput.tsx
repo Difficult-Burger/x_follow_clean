@@ -13,33 +13,30 @@ export default function HandleInput() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!handle.trim()) return
-
     const cleanHandle = handle.replace('@', '').trim()
     setLoading(true)
     router.push(`/analyze?handle=${encodeURIComponent(cleanHandle)}`)
   }
 
   return (
-    <section id="start" className="py-24">
-      <div className="mx-auto max-w-2xl px-6">
+    <section id="start" className="py-16">
+      <div className="mx-auto max-w-lg px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="glass-card rounded-3xl p-8 sm:p-12"
+          className="card rounded-2xl p-8"
         >
-          <div className="mb-8 text-center">
-            <h2 className="mb-3 text-2xl font-bold text-white sm:text-3xl">
-              开始分析
-            </h2>
-            <p className="text-gray-400">
-              输入你的 X 用户名，AI 将自动分析你的关注列表
+          <div className="mb-6 text-center">
+            <h2 className="mb-1.5 text-xl font-bold text-gray-900">开始分析</h2>
+            <p className="text-sm text-gray-500">
+              输入你的 X 用户名，AI 将自动分析关注列表
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3">
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg text-gray-500">
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-base text-gray-400">
                 @
               </span>
               <input
@@ -47,7 +44,7 @@ export default function HandleInput() {
                 value={handle}
                 onChange={(e) => setHandle(e.target.value)}
                 placeholder="your_handle"
-                className="w-full rounded-xl border border-white/10 bg-white/5 py-4 pl-10 pr-4 text-lg text-white placeholder-gray-600 outline-none transition focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20"
+                className="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-9 pr-4 text-base text-gray-900 placeholder-gray-400 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100"
                 disabled={loading}
               />
             </div>
@@ -55,25 +52,24 @@ export default function HandleInput() {
             <button
               type="submit"
               disabled={!handle.trim() || loading}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 py-4 text-lg font-semibold text-white transition-all hover:from-blue-600 hover:to-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gray-900 py-3 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-40"
             >
               {loading ? (
                 <>
-                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                   分析中...
                 </>
               ) : (
                 <>
                   开始分析
-                  <ArrowRight className="h-5 w-5" />
+                  <ArrowRight className="h-4 w-4" />
                 </>
               )}
             </button>
           </form>
 
-          <p className="mt-6 text-center text-xs text-gray-500">
-            当前版本使用模拟数据进行演示。
-            确保你的关注列表已设为公开可见。
+          <p className="mt-4 text-center text-[11px] text-gray-400">
+            当前版本使用模拟数据演示 · 确保关注列表已设为公开
           </p>
         </motion.div>
       </div>

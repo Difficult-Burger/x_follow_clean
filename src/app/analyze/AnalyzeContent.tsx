@@ -45,10 +45,7 @@ export default function AnalyzeContent() {
         body: JSON.stringify({ handle }),
       })
 
-      if (!res.ok) {
-        throw new Error('Analysis failed')
-      }
-
+      if (!res.ok) throw new Error('Analysis failed')
       const data = await res.json()
       setResult(data)
     } catch (err) {
@@ -65,74 +62,71 @@ export default function AnalyzeContent() {
 
   if (!handle) {
     return (
-      <main className="flex min-h-screen items-center justify-center">
+      <main className="flex min-h-screen items-center justify-center bg-gray-50">
         <div className="text-center">
-          <p className="mb-4 text-gray-400">请提供你的 X 用户名</p>
-          <a href="/" className="text-blue-400 hover:underline">返回首页</a>
+          <p className="mb-3 text-sm text-gray-500">请提供 X 用户名</p>
+          <a href="/" className="text-sm text-blue-600 hover:underline">返回首页</a>
         </div>
       </main>
     )
   }
 
   return (
-    <main className="min-h-screen pb-20">
+    <main className="min-h-screen bg-gray-50 pb-20">
       <Header />
 
-      <div className="mx-auto max-w-5xl px-6 pt-24">
+      <div className="mx-auto max-w-5xl px-6 pt-20">
         {/* Page header */}
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-6 flex items-center justify-between">
           <div>
             <a
               href="/"
-              className="mb-2 inline-flex items-center gap-1 text-sm text-gray-500 transition hover:text-white"
+              className="mb-1 inline-flex items-center gap-1 text-xs text-gray-400 transition hover:text-gray-600"
             >
-              <ArrowLeft className="h-4 w-4" /> 返回首页
+              <ArrowLeft className="h-3 w-3" /> 返回首页
             </a>
-            <h1 className="text-2xl font-bold text-white sm:text-3xl">
-              @{handle} 的关注列表分析
+            <h1 className="text-xl font-bold text-gray-900">
+              @{handle} <span className="font-normal text-gray-400">的关注列表分析</span>
             </h1>
           </div>
           {!loading && (
             <button
               onClick={runAnalysis}
-              className="flex items-center gap-2 rounded-lg border border-white/10 px-4 py-2 text-sm text-gray-400 transition hover:bg-white/5 hover:text-white"
+              className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-500 transition hover:bg-gray-50 hover:text-gray-700"
             >
-              <RefreshCw className="h-4 w-4" /> 重新分析
+              <RefreshCw className="h-3 w-3" /> 重新分析
             </button>
           )}
         </div>
 
-        {/* Loading state */}
+        {/* Loading */}
         {loading && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="flex flex-col items-center justify-center py-32"
           >
-            <div className="relative mb-8">
-              <div className="h-20 w-20 animate-spin rounded-full border-4 border-white/10 border-t-blue-500" />
-              <Sparkles className="absolute inset-0 m-auto h-8 w-8 animate-pulse text-blue-400" />
+            <div className="relative mb-6">
+              <div className="h-14 w-14 animate-spin rounded-full border-[3px] border-gray-200 border-t-blue-600" />
+              <Sparkles className="absolute inset-0 m-auto h-5 w-5 animate-pulse text-blue-500" />
             </div>
-            <div className="space-y-3 text-center">
+            <div className="space-y-2 text-center">
               {LOADING_STEPS.map((step, i) => (
                 <motion.p
                   key={i}
                   initial={{ opacity: 0, x: -10 }}
-                  animate={{
-                    opacity: i <= loadingStep ? 1 : 0.3,
-                    x: 0,
-                  }}
+                  animate={{ opacity: i <= loadingStep ? 1 : 0.3, x: 0 }}
                   className={`flex items-center gap-2 text-sm ${
-                    i < loadingStep ? 'text-green-400' :
-                    i === loadingStep ? 'text-white' : 'text-gray-600'
+                    i < loadingStep ? 'text-emerald-600' :
+                    i === loadingStep ? 'text-gray-900' : 'text-gray-300'
                   }`}
                 >
                   {i < loadingStep ? (
-                    <span className="text-green-400">✓</span>
+                    <span>✓</span>
                   ) : i === loadingStep ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
                   ) : (
-                    <span className="text-gray-600">○</span>
+                    <span className="text-gray-300">○</span>
                   )}
                   {step.text}
                 </motion.p>
@@ -141,13 +135,13 @@ export default function AnalyzeContent() {
           </motion.div>
         )}
 
-        {/* Error state */}
+        {/* Error */}
         {error && (
-          <div className="glass-card mx-auto max-w-md rounded-2xl p-8 text-center">
-            <p className="mb-4 text-red-400">{error}</p>
+          <div className="card mx-auto max-w-sm rounded-xl p-6 text-center">
+            <p className="mb-3 text-sm text-rose-600">{error}</p>
             <button
               onClick={runAnalysis}
-              className="rounded-lg bg-white/10 px-6 py-2 text-sm text-white transition hover:bg-white/20"
+              className="rounded-lg bg-gray-900 px-5 py-2 text-xs text-white transition hover:bg-gray-800"
             >
               重试
             </button>
@@ -159,29 +153,29 @@ export default function AnalyzeContent() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.4 }}
           >
             {/* Summary */}
-            <div className="glass-card mb-8 rounded-2xl p-6">
-              <div className="flex items-start gap-3">
-                <Sparkles className="mt-1 h-5 w-5 flex-shrink-0 text-purple-400" />
+            <div className="card mb-6 rounded-xl p-5">
+              <div className="flex items-start gap-2.5">
+                <div className="inline-flex rounded-lg bg-violet-50 p-1.5 text-violet-600">
+                  <Sparkles className="h-4 w-4" />
+                </div>
                 <div>
-                  <h3 className="mb-1 font-semibold text-white">AI 分析总结</h3>
-                  <p className="text-sm leading-relaxed text-gray-300">{result.summary}</p>
+                  <h3 className="mb-0.5 text-sm font-semibold text-gray-900">AI 分析总结</h3>
+                  <p className="text-sm leading-relaxed text-gray-600">{result.summary}</p>
                 </div>
               </div>
             </div>
 
-            {/* Stats */}
             <AnalysisStats result={result} />
 
             {/* Category axes */}
-            <div className="mb-8">
-              <h2 className="mb-4 text-xl font-bold text-white">信息链分析</h2>
-              <p className="mb-6 text-sm text-gray-400">
-                每条轴线代表一个领域。从左到右，账号从信息源头（上游）到信息末端（下游）排列。
-                点击圆点查看详情。
-                <span className="text-red-400"> 红色标记</span>的账号建议取关。
+            <div className="mb-6">
+              <h2 className="mb-1.5 text-base font-bold text-gray-900">信息链分析</h2>
+              <p className="mb-5 text-xs text-gray-500">
+                每条轴线代表一个领域，从左（上游源头）到右（下游末端）。
+                点击账号卡片查看详情。
               </p>
 
               {result.categories.map(category => (
@@ -195,9 +189,9 @@ export default function AnalyzeContent() {
               ))}
             </div>
 
-            {/* Unfollow recommendations */}
-            <div className="mb-8">
-              <h2 className="mb-4 text-xl font-bold text-white">取关建议</h2>
+            {/* Unfollow */}
+            <div className="mb-6">
+              <h2 className="mb-3 text-base font-bold text-gray-900">取关建议</h2>
               <UnfollowPanel accounts={result.recommendedUnfollows} />
             </div>
           </motion.div>
